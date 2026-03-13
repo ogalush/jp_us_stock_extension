@@ -19,22 +19,25 @@ Chrome 拡張のインストール方法:
 ```
 3. PeakFinderで銘柄を取得する  
 4. 「右クリック」→ 「日米銘柄をマーキングする」を押す。  
-<img width="235" height="583" alt="image" src="https://github.com/user-attachments/assets/3522218a-0e1d-47cf-9a28-d39012936bd6" />
+<img width="206" height="433" alt="image" src="https://github.com/user-attachments/assets/90a8e8b0-ff24-4248-9d41-fb6378a914a1" />  
 
+  
 5. ティッカーコードが黒い太字になるので、マウスポインタを合わせる。  
-→ TradingViewの簡易版が表示される。  
-<img width="425" height="416" alt="image" src="https://github.com/user-attachments/assets/60d4e819-608c-4903-a4ad-fcfcfbf6bcbb" />
+→ TradingViewのPC版ウィンドウが表示される。
+<img width="600" height="639" alt="image" src="https://github.com/user-attachments/assets/7728ef2f-9710-48c2-8ecf-acc3bd016742" />
   
-6. TradingViewのiframeのウィンドウを移動させる場合  
-→ ウィンドウ上のタイトルバーをドラッグする。  
-<img width="680" height="134" alt="image" src="https://github.com/user-attachments/assets/eb542705-97ea-4e26-9e40-72f712401dc1" />
+6. 足調整  
+デフォルト: 日足  
+TradingViewの足を調整するとウィンドウを閉じるまで保持します。  
+使い方:  
+表示されたTradingViewウィンドウで足を押す。  
+<img width="427" height="196" alt="image" src="https://github.com/user-attachments/assets/b2714189-c8f4-4012-8cf9-1a35df714282" />
   
-7. TradingViewのiframeのウィンドウの大きさ調整  
-→ ウィンドウの右下にポインタを合わせて、ドラッグする。  
-<img width="666" height="490" alt="image" src="https://github.com/user-attachments/assets/2687429d-242f-4623-9153-91c2609e2158" />
+PeakFinderで、別な銘柄を選ぶと足を維持した状態で次の銘柄が表示されます。  
+<img width="554" height="138" alt="image" src="https://github.com/user-attachments/assets/c624f2d2-e92c-41c3-8311-d493ad7ebdaa" />
   
-8. TradingViewのiframeのウィンドウの大きさを閉じる場合  
-→ ウィンドウ右上の×を押す
+9. TradingViewのウィンドウを閉じる場合  
+→ ブラウザのウィンドウを閉じるのと同じ。  
   
 # その他
 ## ChromeStoreの更新方法
@@ -75,11 +78,10 @@ zip -vr ../jp_us_stock_extension_main.zip . \
 公開されたら、codefreezeさせるため、バージョンタグを付与する。
 ```
 $ git clone git@github.com:ogalush/jp_us_stock_extension.git
-$ VER='v0.2'
+$ VER='v0.3'
 $ git tag -a ${VER:?} -m "Release ${VER:?}
-- Persist preview window position and size
-- Improve iframe loading performance
-- Add dark mode support"
+- We can preview JP and US stocks.
+- WE use TradingView for PC site.
 $ git push origin ${VER:?}
 ```
 修正をして改めてtag打ちしたい場合は、remote tagを削除して再度tag付与することで対応可能。
