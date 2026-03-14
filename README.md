@@ -1,7 +1,7 @@
 # jp_us_stock_extension
 JP/US Stock Checker for PeakFinder  
 
-[日本株/米国株 銘柄チェッカー](TBD)
+[日本株/米国株 銘柄チェッカー](https://chromewebstore.google.com/detail/%E6%97%A5%E6%9C%AC%E6%A0%AA%E7%B1%B3%E5%9B%BD%E6%A0%AA-%E9%8A%98%E6%9F%84%E3%83%81%E3%82%A7%E3%83%83%E3%82%AB%E3%83%BC/jajcbbhfdckikdhpgfjdaedndiolelkp?authuser=0&hl=ja)
 
 # 使い方
 1. 拡張機能をダウンロードする  
