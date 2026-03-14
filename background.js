@@ -34,17 +34,25 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
  * Preview UI
  **************/
 let tvTabId = null;
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
   if (msg.action !== "updateSymbol") return;
   let {ticker, theme, interval} = msg;
+  console.debug("Backend: ticker: " + ticker);
+  console.debug("Backend: theme: " + theme);
+  console.debug("Backend: interval: " + interval);
 
   // 新規tab作成の時は日足へリセット
   if (!tvTabId) {
     interval = "1D";
-    chrome.storage.local.set({
-      tv_interval: interval
-    });
+    chrome.storage.local.set({tv_interval: interval});
+    console.log("Backend: Interval save " + interval);
+
+    // ServiceWorkerが2-3分経過すると休止モードとなりグローバル変数をクリアしてしまうためLocalStorageから復元する.
+    const data = await chrome.storage.local.get("tvTabId");
+    tvTabId = data.tvTabId;
+    console.log("get TradingView tab id.");
   }
+
   const url = `https://jp.tradingview.com/chart/?symbol=${ticker}&interval=${interval}&theme=${theme}`;
   openOrUpdateTab(url, ticker);
 });
@@ -56,41 +64,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 function openOrUpdateTab(url, ticker) {
   // Window作成
   if (!tvTabId) {
-    chrome.windows.create({
-      url: url,
-      type: "normal",
-      focused: true
-    }, (win) => {
-      if (win.tabs && win.tabs.length > 0) {
-        tvTabId = win.tabs[0].id;
-      } else {
-        // win.tabs が空だった場合のフォールバック
-        chrome.tabs.query({ windowId: win.id, active: true }, (tabs) => {
-          tvTabId = tabs[0].id;
-          console.log("Tab ID acquired via query:", tvTabId);
-        });
-      }
-    });
+    createNewWindow(url)
     return;
   }
 
   chrome.tabs.get(tvTabId, (tab) => {
-    if (chrome.runtime.lastError) {
-      chrome.windows.create({
-        url: url,
-        type: "normal",
-        focused: true
-      }, (win) => {
-        if (win.tabs && win.tabs.length > 0) {
-          tvTabId = win.tabs[0].id;
-        } else {
-          // win.tabs が空だった場合のフォールバック
-          chrome.tabs.query({ windowId: win.id, active: true }, (tabs) => {
-            tvTabId = tabs[0].id;
-            console.log("Tab ID acquired via query:", tvTabId);
-          });
-        }
-    });
+    // タブが消えている場合は新規作成
+    if (chrome.runtime.lastError || !tab) {
+      createNewWindow(url)
       return;
     }
 
@@ -109,10 +90,36 @@ function openOrUpdateTab(url, ticker) {
 
 
 /**************
+ * Window作成
+ **************/
+function createNewWindow(url) {
+  chrome.windows.create({ url, type: "normal", focused: true }, (win) => {
+    tvTabId = win.tabs[0].id;
+    // 次回の起動（2-3分後）のためにストレージにバックアップ
+    chrome.storage.local.set({ tvTabId: tvTabId });
+    console.log("Backend: Saved Managed Tradingview TabId to storage.");
+  });
+}
+
+
+/**************
  * Close Tab
  **************/
 chrome.tabs.onRemoved.addListener((tabId) => {
   if (tabId === tvTabId) {
     tvTabId = null;
+    chrome.storage.local.remove("tvTabId");
+    console.log("Backend: Managed TradingView tab closed.");
+
+  }else{
+    // メモリが空(=ServiceWorkerが休止中）の場合、ストレージを確認する。
+    // 管理しているTabIDであればCleanUpする。
+    chrome.storage.local.get("tvTabId", (data) => {
+      if (data.tvTabId === tabId) {
+        chrome.storage.local.remove("tvTabId");
+        console.log("Backend: Managed TradingView tab closed (detected from storage).");
+      }
+    });
   }
+
 });
