@@ -81,7 +81,7 @@ $ git clone git@github.com:ogalush/jp_us_stock_extension.git
 $ VER='v0.3'
 $ git tag -a ${VER:?} -m "Release ${VER:?}
 - We can preview JP and US stocks.
-- WE use TradingView for PC site.
+- WE use TradingView for PC site."
 $ git push origin ${VER:?}
 ```
 修正をして改めてtag打ちしたい場合は、remote tagを削除して再度tag付与することで対応可能。
