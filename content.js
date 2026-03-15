@@ -8,8 +8,8 @@
  *  - Hover stock symbol to preview TradingView chart
  *
  * Author: Takehiko OGASAWARA
- * Version: 0.3
- * Last Updated: 2026-03-14
+ * Version: 0.3.2
+ * Last Updated: 2026-03-15
  */
 
 /**************
@@ -28,7 +28,6 @@ function markDataSymbol() {
 
     td.classList.add("stock-marker");
     td.dataset.ticker = ticker;
-    td.style.cursor = "text";
     td.style.backgroundColor = "#fff3b0"; // 薄い黄色
     td.style.fontWeight = "bold";
   });
@@ -51,6 +50,7 @@ async function showPreview(ticker) {
   });
 }
 
+
 /**************
  * for copy & Paste stock-codes.
  **************/
@@ -71,10 +71,29 @@ function getClosestStockMarker(target) {
 let hoverTimer = null;
 document.addEventListener("mouseenter", (e) => {
   const el = getClosestStockMarker(e.target);
+
+  // 新しい要素に入ったら、既存のタイマー(表示予約)をクリアする
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+
   if (!el) return;
   hoverTimer = setTimeout(() => {
     showPreview(el.dataset.ticker);
   }, 120);
+}, true);
+
+
+/**************
+ * MouseLeave
+ **************/
+document.addEventListener("mouseleave", (e) => {
+  // 要素から外れた時もタイマーを止める(銘柄表示のタイマー予約が入っている場合はキャンセルする)
+  if (getClosestStockMarker(e.target)) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
 }, true);
 
 
@@ -89,6 +108,7 @@ function getTheme() {
   return isDarkMode() ? "dark" : "light";
 }
 
+
 /**************
  * 足取得
  **************/
@@ -102,85 +122,12 @@ function getInterval() {
 
 
 /**************
- * Style
- **************/
-const style = document.createElement("style");
-style.textContent = `
-#stock-preview {
-  position: fixed;
-  top: 80px;
-  left: 500px;
-  width: 420px;
-  height: 360px;
-  background: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 16px rgba(0,0,0,.3);
-  z-index: 999999;
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto;
-}
-
-#stock-preview .header {
-  height: 32px;
-  background: #f5f5f5;
-  cursor: move;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 8px;
-  font-size: 12px;
-  user-select: none;
-}
-
-#stock-preview iframe {
-  flex: 1;
-  border: none;
-}
-
-#stock-preview .close {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-#stock-preview .resize-handle {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 16px;
-  height: 16px;
-  cursor: nwse-resize;
-}
-
-.stock-marker {
-  user-select: text;
-  cursor: text;
-}
-`;
-
-// DarkMode対応
-const dark = isDarkMode();
-style.textContent += dark ? `
-#stock-preview {
-  background: #1e1e1e;
-  border-color: #444;
-  color: #ddd;
-}
-#stock-preview .header {
-  background: #2b2b2b;
-}
-` : "";
-document.head.appendChild(style);
-
-
-/**************
  * initialize
  **************/
 function initMarking() {
   markDataSymbol();
 }
+
 
 /**************
  * Main
