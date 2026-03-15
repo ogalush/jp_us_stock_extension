@@ -8,7 +8,8 @@ JP/US Stock Checker for PeakFinder
 https://github.com/ogalush/jp_us_stock_extension/archive/refs/heads/main.zip  
 → ダウンロード後、zipファイルを解凍する。  
 
-2. 拡張機能を入れる
+2. 拡張機能を入れる  
+2.1 拡張機能を入れる (Developer版)  
 ```
 Chrome 拡張のインストール方法:
 1. chrome://extensions/ を開く
@@ -17,6 +18,11 @@ Chrome 拡張のインストール方法:
 4. ダウンロードした「jp_us_stock_extension」フォルダを選択する。
 5. 拡張機能ウィンドウに「日本株/米国株 銘柄チェッカー」が表示されればOK.
 ```
+  
+2.2 拡張機能を入れる (一般ユーザ版)  
+「[日本株/米国株 銘柄チェッカー](https://chromewebstore.google.com/detail/%E6%97%A5%E6%9C%AC%E6%A0%AA%E7%B1%B3%E5%9B%BD%E6%A0%AA-%E9%8A%98%E6%9F%84%E3%83%81%E3%82%A7%E3%83%83%E3%82%AB%E3%83%BC/jajcbbhfdckikdhpgfjdaedndiolelkp?authuser=0&hl=ja)」をダウンロードしてください。  
+画面右上の「Chrome に追加」→「拡張機能を追加」を押せばインストール完了です。  
+  
 3. PeakFinderで銘柄を取得する  
 4. 「右クリック」→ 「日米銘柄をマーキングする」を押す。  
 <img width="206" height="433" alt="image" src="https://github.com/user-attachments/assets/90a8e8b0-ff24-4248-9d41-fb6378a914a1" />  
@@ -88,4 +94,13 @@ $ git push origin ${VER:?}
 ```
 $ git push origin --delete ${VER:?}
 ```
+
+## コードの役割について
+|Key|Value|
+|---|---|
+|manifest.json|GoogleChrome拡張機能の構成・権限を定義する設定ファイル|
+|background.js|Service Worker。拡張機能のバックグラウンド処理を担当|
+|contents.js|閲覧サイト（PeakFinder）で動作。銘柄コードの抽出とメッセージ送信を担当|
+|tradingview.js|TradingView内で動作。銘柄切り替えの高速化とチャート設定（日足等）の保持を担当|
+  
 以上
