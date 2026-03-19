@@ -8,29 +8,46 @@
  *  - Hover stock symbol to preview TradingView chart
  *
  * Author: Takehiko OGASAWARA
- * Version: 0.3.2
- * Last Updated: 2026-03-15
+ * Version: 0.4.0
+ * Last Updated: 2026-03-20
  */
 
 /**************
  * MarkUp stock-code
  **************/
 function markDataSymbol() {
-  document.querySelectorAll("tr[data-symbol]").forEach(tr => {
-    const ticker = tr.dataset.symbol;
-    if (!ticker) return;
+  const SITE_CONFIGS = window.STOCK_MARKER.SITE_CONFIGS;
+  for (const config of SITE_CONFIGS) {
+    const elements = document.querySelectorAll(config.selector);
+    if (elements.length === 0) continue;
 
-    const td = tr.querySelector("td");
-    if (!td) return;
+    let found = false;
+    for (const el of elements) {
+      const code = config.getCode(el);
+      if (!code) continue;
 
-    // 二重処理防止
-    if (td.classList.contains("stock-marker")) return;
+      const target = config.target(el);
+      if (!target) continue;
 
-    td.classList.add("stock-marker");
-    td.dataset.ticker = ticker;
-    td.style.backgroundColor = "#fff3b0"; // 薄い黄色
-    td.style.fontWeight = "bold";
-  });
+      // 二重処理防止
+      if (target.classList.contains("stock-marker")) continue;
+
+      target.classList.add("stock-marker");
+      target.dataset.ticker = code;
+      if (config.applyStyle) {
+        config.applyStyle(target);
+      } else {
+        target.style.color = "#000000"; // 黒色 (ダークモード時に白色 vs 黄色(背景)のため指定)
+        target.style.backgroundColor = "#fff3b0"; // 黄色
+        target.style.fontWeight = "bold";
+      }
+
+      // CONFIGが合っているとみなして終了.
+      found = true;
+    }
+
+    if (found) break;
+  }
 }
 
 
