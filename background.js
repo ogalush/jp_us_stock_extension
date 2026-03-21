@@ -8,8 +8,8 @@
  *  - Hover stock symbol to preview TradingView chart
  *
  * Author: Takehiko OGASAWARA
- * Version: 0.3
- * Last Updated: 2026-03-14
+ * Version: 0.4.0
+ * Last Updated: 2026-03-20
  */
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -24,7 +24,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "mark-stocks") {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: ["content.js"]
+      files: ["siteConfigs.js", "content.js"]
     });
   }
 });
