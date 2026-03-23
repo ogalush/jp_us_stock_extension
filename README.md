@@ -102,5 +102,16 @@ $ git push origin --delete ${VER:?}
 |background.js|Service Worker。拡張機能のバックグラウンド処理を担当|
 |contents.js|閲覧サイト（PeakFinder）で動作。銘柄コードの抽出とメッセージ送信を担当|
 |tradingview.js|TradingView内で動作。銘柄切り替えの高速化とチャート設定（日足等）の保持を担当|
-  
+
+
+## 動作確認について
+銘柄コードの検知が出来ること、チェック出来た銘柄コードからTradingViewへ画面遷移出来ることの2点を確認する。  
+https://github.com/ogalush/jp_us_stock_extension/pull/6 で銘柄投票へ対応したため対象は以下となる。
+|Key|Value|
+|---|---|
+|PeakFinder: 日本株|-|
+|PeakFinder: 米国株|-|
+|銘柄投票: 投票画面|チェックマークをつけて投票も出来ること。|
+|銘柄投票: 投票結果画面|-|
+
 以上
