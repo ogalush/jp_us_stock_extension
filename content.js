@@ -16,6 +16,7 @@
  * MarkUp stock-code
  **************/
 function markDataSymbol() {
+  let site_found = false;
   const SITE_CONFIGS = window.STOCK_MARKER.SITE_CONFIGS;
   for (const config of SITE_CONFIGS) {
     const elements = document.querySelectorAll(config.selector);
@@ -30,7 +31,10 @@ function markDataSymbol() {
       if (!target) continue;
 
       // 二重処理防止
-      if (target.classList.contains("stock-marker")) continue;
+      if (target.classList.contains("stock-marker")){
+        found = true;
+        continue;
+      }
 
       target.classList.add("stock-marker");
       target.dataset.ticker = code;
@@ -45,8 +49,99 @@ function markDataSymbol() {
       // CONFIGが合っているとみなして終了.
       found = true;
     }
+    if (found){
+      console.log("markDataSymbol ConfigSelector: " + config.name);
+      site_found = true;
+      break;
+    }
+  }
 
-    if (found) break;
+  // CONFIGが合っていないサイトの場合
+  if(!site_found){
+    console.log("markDataSymbol ConfigSelector: FallBackDetect");
+    // FallBack処理 (最後は正規表現でマッチングさせる)
+    fallbackDetect();
+  }
+}
+
+
+/**************
+* MarkUp stock-code fallback support (1)
+ **************/
+function fallbackDetect() {
+  const elements = document.querySelectorAll("table *, div *");
+
+  for (const el of elements) {
+    if (el.dataset.stockMarked) continue;
+
+    const text = el.textContent;
+    if (!text) continue;
+
+    const result = detectStockCode(text);
+    if (!result) continue;
+    console.debug("fallbackDetect TYPE:", result.type, "CODE:", result.code);
+
+    el.dataset.stockMarked = "true";
+
+    //銘柄コード部分をマーキング
+    highlightStockCode(el, result.code);
+  }
+}
+
+
+/**************
+* MarkUp stock-code fallback support (2)
+ **************/
+function detectStockCode(text) {
+  // 銘柄名+銘柄コードの場合の対応
+  const t = text.replace(/\s+/g, " ").trim();
+
+  // 日本株（部分一致）
+  const jpMatch = t.match(/\b\d{3}[0-9A-Z]\b/);
+  if (jpMatch) {
+    return { type: "JP", code: jpMatch[0] };
+  }
+
+  // 米国株
+  const usMatch = t.match(/\b[A-Z]{1,5}([.-][A-Z])?\b/);
+  if (usMatch) {
+    const code = usMatch[0];
+    if (["USD", "ETF", "ADR", "PER", "EPS"].includes(code)) return null;
+    return { type: "US", code };
+  }
+  return null;
+}
+
+
+/**************
+* MarkUp stock-code fallback support (3)
+ **************/
+function highlightStockCode(el, code) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let node;
+  while (node = walker.nextNode()) {
+    if (!node.nodeValue.includes(code)) continue;
+
+    const span = document.createElement("span");
+    span.textContent = code;
+    span.style.backgroundColor = "#fff3b0";
+    span.style.color = "#000000";
+    span.style.fontWeight = "bold";
+    span.dataset.ticker = code; //TradingView用
+    span.classList.add("stock-marker"); //TradingView用
+
+    const parts = node.nodeValue.split(code);
+    const fragment = document.createDocumentFragment();
+
+    parts.forEach((part, index) => {
+      if (part) {
+        fragment.appendChild(document.createTextNode(part));
+      }
+      if (index < parts.length - 1) {
+        fragment.appendChild(span.cloneNode(true));
+      }
+    });
+    node.parentNode.replaceChild(fragment, node);
   }
 }
 
@@ -54,10 +149,11 @@ function markDataSymbol() {
 /**************
  * Show TradingView
  **************/
-let currentTicker = null;
 async function showPreview(ticker) {
-  if (currentTicker === ticker) return;
-  currentTicker = ticker;
+  const state = window.STOCK_MARKER.contentState;
+  if (state.currentTicker === ticker) return;
+  state.currentTicker = ticker;
+
   const interval = await getInterval();
   chrome.runtime.sendMessage({
     action: "updateSymbol",
@@ -85,18 +181,18 @@ function getClosestStockMarker(target) {
 /**************
  * MouceOver → TradingView Tab
  **************/
-let hoverTimer = null;
 document.addEventListener("mouseenter", (e) => {
   const el = getClosestStockMarker(e.target);
 
   // 新しい要素に入ったら、既存のタイマー(表示予約)をクリアする
-  if (hoverTimer) {
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
+  const state = window.STOCK_MARKER.contentState;
+  if (state.hoverTimer) {
+    clearTimeout(state.hoverTimer);
+    state.hoverTimer = null;
   }
 
   if (!el) return;
-  hoverTimer = setTimeout(() => {
+  state.hoverTimer = setTimeout(() => {
     showPreview(el.dataset.ticker);
   }, 120);
 }, true);
@@ -106,10 +202,11 @@ document.addEventListener("mouseenter", (e) => {
  * MouseLeave
  **************/
 document.addEventListener("mouseleave", (e) => {
+  const state = window.STOCK_MARKER.contentState;
   // 要素から外れた時もタイマーを止める(銘柄表示のタイマー予約が入っている場合はキャンセルする)
   if (getClosestStockMarker(e.target)) {
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
+    clearTimeout(state.hoverTimer);
+    state.hoverTimer = null;
   }
 }, true);
 

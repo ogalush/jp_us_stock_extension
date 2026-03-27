@@ -1,4 +1,9 @@
-window.STOCK_MARKER = window.STOCK_MARKER || {};
+window.STOCK_MARKER = window.STOCK_MARKER || {
+  contentState: {
+    currentTicker: null,
+    hoverTimer: null
+  }
+};
 window.STOCK_MARKER.SITE_CONFIGS = [
   {
     name: "PeakFinder",
