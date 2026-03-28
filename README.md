@@ -106,12 +106,28 @@ $ git push origin --delete ${VER:?}
 
 ## 動作確認について
 銘柄コードの検知が出来ること、チェック出来た銘柄コードからTradingViewへ画面遷移出来ることの2点を確認する。  
-https://github.com/ogalush/jp_us_stock_extension/pull/6 で銘柄投票へ対応したため対象は以下となる。
+https://github.com/ogalush/jp_us_stock_extension/pull/6 で銘柄投票へ対応したため対象は以下となる。  
+(1) Require画面
 |Key|Value|
 |---|---|
 |PeakFinder: 日本株|-|
 |PeakFinder: 米国株|-|
 |銘柄投票: 投票画面|チェックマークをつけて投票も出来ること。|
 |銘柄投票: 投票結果画面|-|
+  
+(2) Optional画面  
+銘柄マーカーの利用範囲を広げるため一般のランキングサイトもある程度見られるようにする。  
+先方のWebサイト更改によりマーカー取得出来なくなることも容易に考えられるため、  
+table, divタグでの表を閲覧できるように対応する。(#8)
+|Key|Value|
+|---|---|
+|[SBI証券 値上がり率上位ランキング（日本株）](https://www.sbisec.co.jp/ETGate/?_ControlID=WPLETmgR001Control&_PageID=WPLETmgR001Mdtl20&_ActionID=DefaultAID&_DataStoreID=DSWPLETmgR001Control&OutSide=on&getFlg=on&burl=iris_ranking&cat1=market&cat2=ranking&file=index.html&dir=tl1-rnk%7Ctl2-stock%7Ctl3-price%7Ctl4-uprate%7Ctl5-priceview%7Ctl7-T1&_scpr=intpr=hn_i_ds_rank)|表の中の銘柄コードのマーキング・チャート表示|
+|[SBI証券 当社週間売買代金ランキング (米国株)](https://www.sbisec.co.jp/ETGate/?OutSide=on&getFlg=on&_ControlID=WPLETmgR001Control&_PageID=WPLETmgR001Mdtl20&_ActionID=DefaultAID&_DataStoreID=DSWPLETmgR001Control&burl=iris_ranking&cat1=market&cat2=ranking&dir=tl1-rnk%7Ctl2-foreign%7Ctl3-salesval&file=index.html)|〃|
+|[日経新聞 値上がり率ランキング (日本株)](https://www.nikkei.com/marketdata/ranking-jp/price-rise/)|〃|
+|[日経新聞 値上がり率ランキング (米国株)](https://www.nikkei.com/marketdata/ranking-us/price-rise/)|〃|
+|[KABUTAN 今日の株価上昇率ランキング (日本株)](https://kabutan.jp/warning/?mode=2_1&market=1&dispmode=normal)|〃|
+|[KABUTAN 今日の株価上昇率ランキング (米国株)](https://us.kabutan.jp/warnings/price_increase)|〃|
+|[moomoo証券 ランキング (日本株)](https://www.moomoo.com/ja/quote/jp/most-active-stocks)|〃|
+|[moomoo証券 ランキング (米国株)](https://www.moomoo.com/ja/quote/us/most-active-stocks)|〃|
 
 以上
