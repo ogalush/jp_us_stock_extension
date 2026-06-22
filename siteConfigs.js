@@ -12,8 +12,12 @@ window.STOCK_MARKER.SITE_CONFIGS = [
     target: el => el.querySelector("td"),
     applyStyle: (target) => {
       target.style.color = "#000000"; // 黒色 (ダークモード時に白色 vs 黄色(背景)のため指定)
-      target.style.backgroundColor = "#fff3b0"; // 黄色
       target.style.fontWeight = "bold";
+      target.style.setProperty(
+        "background",
+        "#fff3b0",
+        "important"
+      ); // 黄色 (2026.6.23 Peakfinder .sticky-col1 による色上書き対応)
     }
   },
   {
