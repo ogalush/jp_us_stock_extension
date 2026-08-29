@@ -8,8 +8,8 @@
  *  - Hover stock symbol to preview TradingView chart
  *
  * Author: Takehiko OGASAWARA
- * Version: 0.4.0
- * Last Updated: 2026-03-20
+ * Version: 0.4.1
+ * Last Updated: 2026-08-30
  */
 
 /**************
@@ -77,14 +77,14 @@ function fallbackDetect() {
     const text = el.textContent;
     if (!text) continue;
 
-    const result = detectStockCode(text);
-    if (!result) continue;
-    console.debug("fallbackDetect TYPE:", result.type, "CODE:", result.code);
+    const results = detectStockCode(text);
+    if (!results) continue;
+    console.debug("fallbackDetect: ", results);
 
     el.dataset.stockMarked = "true";
 
-    //銘柄コード部分をマーキング
-    highlightStockCode(el, result.code);
+    // 銘柄コード部分をマーキング
+    highlightStockCode(el, results);
   }
 }
 
@@ -96,51 +96,88 @@ function detectStockCode(text) {
   // 銘柄名+銘柄コードの場合の対応
   const t = text.replace(/\s+/g, " ").trim();
 
+  // テキスト内に複数銘柄あるため複数マッチ対応
+  const results = [];
+
   // 日本株（部分一致）
-  const jpMatch = t.match(/\b\d{3}[0-9A-Z]\b/);
-  if (jpMatch) {
-    return { type: "JP", code: jpMatch[0] };
+  const jpMatches = t.match(/\b\d{3}[0-9A-Z]\b/g);
+  if (jpMatches) {
+    jpMatches.forEach(code => {
+      results.push({ type: "JP", code });
+    });
   }
 
   // 米国株
-  const usMatch = t.match(/\b[A-Z]{1,5}([.-][A-Z])?\b/);
-  if (usMatch) {
-    const code = usMatch[0];
-    if (["USD", "ETF", "ADR", "PER", "EPS"].includes(code)) return null;
-    return { type: "US", code };
+  const usMatches = t.match(/\b[A-Z]{1,5}(?:[.-][A-Z])?\b/g);
+  if (usMatches) {
+    usMatches.forEach(code => {
+      if (!["USD", "ETF", "ADR", "PER", "EPS"].includes(code)) {
+        results.push({ type: "US", code });
+      }
+    });
   }
-  return null;
+
+  return results.length > 0 ? results : null;
 }
 
 
 /**************
 * MarkUp stock-code fallback support (3)
  **************/
-function highlightStockCode(el, code) {
+function highlightStockCode(el, codelist) {
+  if (!codelist || codelist.length === 0) return;
+
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+
   let node;
   while (node = walker.nextNode()) {
-    if (!node.nodeValue.includes(code)) continue;
+    textNodes.push(node);
+  }
 
-    const span = document.createElement("span");
-    span.textContent = code;
-    span.style.backgroundColor = "#fff3b0";
-    span.style.color = "#000000";
-    span.style.fontWeight = "bold";
-    span.dataset.ticker = code; //TradingView用
-    span.classList.add("stock-marker"); //TradingView用
+  const pattern = new RegExp(
+    `\\b(?:${[...new Set(codelist.map(result => result.code))]
+      .sort((a, b) => b.length - a.length)
+      .map(code => code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|")})\\b`,
+    "g"
+);
 
-    const parts = node.nodeValue.split(code);
+  for (const node of textNodes) {
+    const text = node.nodeValue;
+
+    pattern.lastIndex = 0;
+    if (!pattern.test(text)) continue;
+    pattern.lastIndex = 0;
+
     const fragment = document.createDocumentFragment();
+    let lastIndex = 0;
 
-    parts.forEach((part, index) => {
-      if (part) {
-        fragment.appendChild(document.createTextNode(part));
+    for (const match of text.matchAll(pattern)) {
+      if (match.index > lastIndex) {
+        fragment.appendChild(
+          document.createTextNode(
+            text.slice(lastIndex, match.index)
+          )
+        );
       }
-      if (index < parts.length - 1) {
-        fragment.appendChild(span.cloneNode(true));
-      }
-    });
+
+      const code = match[0];
+      const span = document.createElement("span");
+      span.textContent = code;
+      span.style.backgroundColor = "#fff3b0";
+      span.style.color = "#000000";
+      span.style.fontWeight = "bold";
+      span.dataset.ticker = code;
+      span.classList.add("stock-marker");
+
+      fragment.appendChild(span);
+      lastIndex = match.index + code.length;
+    }
+
+    if (lastIndex < text.length) {
+      fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
     node.parentNode.replaceChild(fragment, node);
   }
 }
